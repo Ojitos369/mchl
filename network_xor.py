@@ -1,151 +1,146 @@
-# network_xor.py
-# Implementación detallada de una red neuronal desde cero para resolver la compuerta XOR
+# red_xor.py
+# Implementación detallada de una red neuronal desde cero (sin frameworks) para resolver la compuerta XOR
+# Todas las variables y métodos están en español cuando es viable, para facilitar comprensión.
+# Incluye impresiones (prints) exhaustivas en cada etapa para seguir la evolución de los parámetros.
 
-import numpy as np  # Biblioteca fundamental para operaciones numéricas y manejo de arrays multidimensionales
+import numpy as np  # Operaciones numéricas y manejo de arrays multidimensionales
 
 # 1. Función de activación sigmoide y su derivada
-#    La sigmoide introduce no linealidad y mapea valores reales al rango (0,1).
-def sigmoid(z):
-    # z: valor o array de valores de entrada (suma ponderada más sesgo)
-    # Devuelve: 1 / (1 + e^{-z})
+#    Introduce no linealidad y normaliza la salida al rango (0, 1)
+
+def sigmoide(z):
+    """Calcula 1 / (1 + e^{-z})."""
     return 1 / (1 + np.exp(-z))
 
-# Derivada de la sigmoide necesaria para backpropagation (regla de la cadena)
-def sigmoid_derivative(a):
-    # a: valor de activación calculado por sigmoid(z)
-    # Derivada: sigmoid(z) * (1 - sigmoid(z))
+
+def derivada_sigmoide(a):
+    """Devuelve la derivada de la sigmoide: a * (1 - a)."""
     return a * (1 - a)
 
-class NeuralNetwork:
+
+class RedNeuronal:
     """
-    Clase que implementa una red neuronal de 2 capas (oculta + salida) para resolver XOR.
-    Conceptos clave:
-      - Pesos (W) y sesgos (b) como parámetros entrenables
-      - Forward pass y backpropagation
-      - Descenso de gradiente para actualización de parámetros
+    Red neuronal con:
+      - Capa oculta: `ocultas` neuronas
+      - Capa de salida: 1 neurona (problema binario)
+    Variables clave (en español):
+      pesos1, sesgo1 → parámetros de la capa oculta
+      pesos2, sesgo2 → parámetros de la capa de salida
+      suma1, act1 → pre‑activaciones y activaciones en la capa oculta
+      suma2, act2 → pre‑activaciones y activaciones en la capa de salida
     """
-    def __init__(self, input_size, hidden_size, output_size, learning_rate=0.1):
-        # input_size: número de neuronas de la capa de entrada (para XOR, 2)
-        # hidden_size: número de neuronas en la capa oculta (para capacidad de aprender no linealidad)
-        # output_size: neuronas de salida (para XOR, 1)
-        # learning_rate: tasa de aprendizaje (hiperparámetro para controlar tamaño de paso en gradiente)
-        self.lr = learning_rate
 
-        # Inicialización de los pesos con valores pequeños aleatorios (para romper simetría)
-        # W1: matriz de pesos de capa oculta a entrada (hidden_size x input_size)
-        self.W1 = np.random.randn(hidden_size, input_size) * 0.01
-        # b1: vector de sesgos para capa oculta (hidden_size x 1)
-        self.b1 = np.zeros((hidden_size, 1))
+    def __init__(self, entradas: int, ocultas: int, salidas: int = 1, tasa_aprendizaje: float = 0.1):
+        self.tasa = tasa_aprendizaje  # η (eta) en descenso de gradiente
 
-        # W2: matriz de pesos de capa de salida a capa oculta (output_size x hidden_size)
-        self.W2 = np.random.randn(output_size, hidden_size) * 0.01
-        # b2: vector de sesgos para capa de salida (output_size x 1)
-        self.b2 = np.zeros((output_size, 1))
+        # Inicializar pesos con distribución normal pequeña para romper simetría
+        self.pesos1 = np.random.randn(ocultas, entradas) * 0.01  # (ocultas × entradas)
+        self.sesgo1 = np.zeros((ocultas, 1))                      # (ocultas × 1)
 
-    def forward(self, X):
-        """
-        Propagación hacia adelante (forward pass): calcula las activaciones de cada capa.
-        X: array de entrada con forma (input_size, m) donde m es el número de ejemplos.
-        Retorna A2: activación de la capa de salida (predicciones) con forma (output_size, m).
-        """
-        # Cálculo de suma ponderada + sesgo en capa oculta: Z1 = W1·X + b1
-        self.Z1 = np.dot(self.W1, X) + self.b1
-        # Aplicar función de activación sigmoide: A1 = sigmoid(Z1)
-        self.A1 = sigmoid(self.Z1)
+        self.pesos2 = np.random.randn(salidas, ocultas) * 0.01   # (1 × ocultas)
+        self.sesgo2 = np.zeros((salidas, 1))                      # (1 × 1)
 
-        # Segunda capa: suma ponderada + sesgo: Z2 = W2·A1 + b2
-        self.Z2 = np.dot(self.W2, self.A1) + self.b2
-        # Activación de salida con sigmoide: A2 = sigmoid(Z2)
-        self.A2 = sigmoid(self.Z2)
+    # ======== PROPAGACIÓN HACIA ADELANTE ========
+    def adelantado(self, X: np.ndarray) -> np.ndarray:
+        """Computa la salida de la red y muestra valores intermedios."""
+        # Capa oculta: suma ponderada + sesgo → sigmoide
+        self.suma1 = np.dot(self.pesos1, X) + self.sesgo1
+        self.act1 = sigmoide(self.suma1)
 
-        # A2 son las predicciones de la red para cada ejemplo
-        return self.A2
+        # Capa de salida
+        self.suma2 = np.dot(self.pesos2, self.act1) + self.sesgo2
+        self.act2 = sigmoide(self.suma2)
 
-    def compute_loss(self, Y_hat, Y):
-        """
-        Calcula la pérdida (loss) usando entropía cruzada binaria.
-        Y_hat: predicciones (A2)
-        Y: etiquetas reales (0 o 1)
-        Retorna valor escalar de pérdida media.
-        """
-        m = Y.shape[1]  # número de ejemplos
-        epsilon = 1e-8  # evita log(0) y división por cero
-        # Fórmula de entropía cruzada: -(1/m) * Σ[y·log(ŷ) + (1-y)·log(1-ŷ)]
-        loss = - (1/m) * np.sum(Y * np.log(Y_hat + epsilon) + (1 - Y) * np.log(1 - Y_hat + epsilon))
-        return loss
+        # Visualizar
+        print("=== Adelante ===")
+        print("suma1 (pre‑activación oculta):\n", self.suma1)
+        print("act1 (activación oculta):\n", self.act1)
+        print("suma2 (pre‑activación salida):\n", self.suma2)
+        print("act2 (salida / predicción):\n", self.act2)
 
-    def backward(self, X, Y):
-        """
-        Propagación hacia atrás (backpropagation): calcula gradientes y actualiza parámetros.
-        """
-        m = X.shape[1]  # número de ejemplos
+        return self.act2
 
-        # 1) Gradiente de la capa de salida
-        # dZ2: derivada de la pérdida respecto a Z2 (para entropía + sigmoide)
-        dZ2 = self.A2 - Y  # derivada directa para entropía cruzada binaria
-        # dW2: gradiente de W2: (1/m) * dZ2·A1^T
-        dW2 = (1/m) * np.dot(dZ2, self.A1.T)
-        # db2: gradiente de b2: media de dZ2 sobre ejemplos
-        db2 = (1/m) * np.sum(dZ2, axis=1, keepdims=True)
+    # ======== FUNCIÓN DE PÉRDIDA ========
+    def perdida(self, Y_pred: np.ndarray, Y: np.ndarray) -> float:
+        """Calcula entropía cruzada binaria y la imprime."""
+        m = Y.shape[1]
+        eps = 1e-8  # evitar log(0)
+        perdida = -(1 / m) * np.sum(Y * np.log(Y_pred + eps) + (1 - Y) * np.log(1 - Y_pred + eps))
+        print("Pérdida (entropía cruzada):", perdida)
+        return perdida
 
-        # 2) Propagar error a capa oculta
-        # dA1: derivada de la pérdida respecto a A1
-        dA1 = np.dot(self.W2.T, dZ2)
-        # dZ1: dA1 * derivada de la función de activación sigmoide
-        dZ1 = dA1 * sigmoid_derivative(self.A1)
-        # dW1: gradiente de W1
-        dW1 = (1/m) * np.dot(dZ1, X.T)
-        # db1: gradiente de b1
-        db1 = (1/m) * np.sum(dZ1, axis=1, keepdims=True)
+    # ======== PROPAGACIÓN HACIA ATRÁS ========
+    def retropropagacion(self, X: np.ndarray, Y: np.ndarray):
+        """Calcula gradientes y actualiza pesos/sesgos; imprime cada gradiente."""
+        m = X.shape[1]
 
-        # 3) Actualizar parámetros con descenso de gradiente
-        # W := W - lr * dW ; b := b - lr * db
-        self.W2 -= self.lr * dW2
-        self.b2 -= self.lr * db2
-        self.W1 -= self.lr * dW1
-        self.b1 -= self.lr * db1
+        # Error en la capa de salida
+        dS2 = self.act2 - Y  # derivada dL/dZ2
+        dPesos2 = (1 / m) * np.dot(dS2, self.act1.T)
+        dSesgo2 = (1 / m) * np.sum(dS2, axis=1, keepdims=True)
 
-    def train(self, X, Y, epochs=10000, print_every=1000):
-        """
-        Entrena la red neuronal.
-        epochs: número de iteraciones sobre todo el dataset.
-        print_every: cada cuántas épocas mostrar la pérdida.
-        """
-        for i in range(1, epochs + 1):
-            # Forward pass: obtener predicciones
-            Y_hat = self.forward(X)
-            # Calcular pérdida
-            loss = self.compute_loss(Y_hat, Y)
-            # Backward pass: actualizar pesos y sesgos
-            self.backward(X, Y)
+        # Propagar error a la capa oculta
+        dAct1 = np.dot(self.pesos2.T, dS2)
+        dS1 = dAct1 * derivada_sigmoide(self.act1)
+        dPesos1 = (1 / m) * np.dot(dS1, X.T)
+        dSesgo1 = (1 / m) * np.sum(dS1, axis=1, keepdims=True)
 
-            # Mostrar progreso cada "print_every" iteraciones
-            if i % print_every == 0:
-                print(f"Época {i}, loss: {loss:.6f}")  # .6f: formato con 6 decimales
+        # Mostrar gradientes
+        print("=== Retro ===")
+        print("dPesos2:\n", dPesos2)
+        print("dSesgo2:\n", dSesgo2)
+        print("dPesos1:\n", dPesos1)
+        print("dSesgo1:\n", dSesgo1)
 
+        # Actualizar parámetros (descenso de gradiente)
+        self.pesos2 -= self.tasa * dPesos2
+        self.sesgo2 -= self.tasa * dSesgo2
+        self.pesos1 -= self.tasa * dPesos1
+        self.sesgo1 -= self.tasa * dSesgo1
+
+    # ======== BUCLE DE ENTRENAMIENTO ========
+    def entrenar(self, X: np.ndarray, Y: np.ndarray, epocas: int = 10000, imprimir_cada: int = 1000):
+        """Entrena la red y muestra métricas cada `imprimir_cada` épocas."""
+        for i in range(1, epocas + 1):
+            print(f"\n--- Época {i} ---")
+            Y_pred = self.adelantado(X)
+            loss = self.perdida(Y_pred, Y)
+            self.retropropagacion(X, Y)
+            if i % imprimir_cada == 0:
+                print(f"(Info) Época {i}, pérdida aprox: {loss:.6f}")
+
+
+# ======== EJECUCIÓN DIRECTA ========
 if __name__ == "__main__":
-    # ===== Datos de entrenamiento para XOR =====
-    # X: entradas con forma (2,4): 2 características, 4 ejemplos
-    X = np.array([[0, 0, 1, 1],
-                  [0, 1, 0, 1]])
-    # Y: etiquetas con forma (1,4): resultado XOR para cada ejemplo
+    # Datos XOR: entradas (2×4) y etiquetas (1×4)
+    X = np.array([[0, 0, 1, 1], [0, 1, 0, 1]])
     Y = np.array([[0, 1, 1, 0]])
 
-    # Crear la red neuronal
-    # Parámetros: 2 entradas, 2 neuronas ocultas, 1 salida, lr=1 (experimentar con lr)
-    nn = NeuralNetwork(input_size=2, hidden_size=2, output_size=1, learning_rate=1)
+    red = RedNeuronal(entradas=2, ocultas=2, tasa_aprendizaje=1)
+    red.entrenar(X, Y, epocas=5, imprimir_cada=1)  # Reduce epocas para ver menos salida
 
-    # Entrenar la red
-    nn.train(X, Y, epochs=10000, print_every=1000)
+    print("\nPredicciones finales (redondeadas):", np.round(red.adelantado(X), 3))
 
-    # Probar la red con los mismos datos de entrada
-    outputs = nn.forward(X)
-    # Mostrar resultados aproximados (round a 3 decimales)
-    print("\nPredicciones finales (aproximadas):")
-    print(np.round(outputs, 3))
+# Temas para profundizar y referencias se mantienen al final ↓
 
 # Temas para profundizar:
 # - Álgebra lineal: multiplicación de matrices, vectores y dimensiones
 # - Funciones de activación: por qué se usan (no linealidad)
 # - Descenso de gradiente y tasa de aprendizaje (learning rate)
 # - Backpropagation: regla de la cadena y cálculo de derivadas parciales
+
+# Referencias:
+# 1. Sigmoide y funciones de activación:
+#    - Wikipedia: https://es.wikipedia.org/wiki/Funci%C3%B3n_sigmoide
+#    - 3Blue1Brown (YouTube, subtítulos): https://youtu.be/xbYlEzI0SPY
+# 2. Backpropagation:
+#    - Rumelhart et al. (1986): https://doi.org/10.1038/323533a0
+#    - Ejemplo paso a paso (Matt Mazur): https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
+# 3. Entropía cruzada y optimización:
+#    - Wikipedia: https://es.wikipedia.org/wiki/Entrop%C3%ADa_cruzada
+# 4. Álgebra lineal para ML:
+#    - Khan Academy: https://www.khanacademy.org/math/linear-algebra
+#    - MIT OpenCourseWare: https://ocw.mit.edu/courses/18-06-linear-algebra-spring-2010/
+# 5. Recursos didácticos generales:
+#    - Michael Nielsen, "Neural Networks and Deep Learning": http://neuralnetworksanddeeplearning.com/
+#    - Curso de Andrew Ng (Coursera): https://www.coursera.org/learn/neural-networks-deep-learning

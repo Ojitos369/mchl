@@ -1,3 +1,21 @@
 .indexPage {
-    background-color: #0003;
+    .linkElement {
+        padding: 15px;
+        .linkContent {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--my-minor);
+            color: var(--my-minor);
+            border-radius: 15px;
+            width: 200px;
+            height: 150px;
+            transition: all 0.3s ease-in-out;
+            &:hover {
+                background-color: var(--my-minor);
+                color: var(--my-major);
+                transform: scale(1.05);
+            }
+        }
+    }
 }

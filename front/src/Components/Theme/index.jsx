@@ -8,7 +8,7 @@ function Theme() {
     const { ls, lf, s, f } = useStates();
     return (
         <button
-            className={`${styles.toggle_theme_button}`}
+            className={`${styles.toggle_theme_button} manita`}
             id='toggle_theme_button'
             onClick={lf.toggleTheme}
             >

@@ -32,6 +32,54 @@ const useF = props => {
         }
     }
 
+    const puertas_logicas = {
+        train: (x, y, lr, af) => {
+            if (!!s.puertas_logicas?.training) return;
+            u1("puertas_logicas", "training", true);
+            u1("puertas_logicas", "trained", false);
+            u1("puertas_logicas", "respuesta", "");
+            
+            const end = 'puertas_logicas/train/';
+            const data = {x, y, lr, af};
+            u1("puertas_logicas", "resumen", data);
+            miAxios.post(end, data)
+            .then(res => {
+                const { message } = res.data;
+                general.notificacion({
+                    message, 
+                    mode: "success"
+                });
+                u1("puertas_logicas", "trained", true);
+            })
+            .catch(err => {
+                const { message } = err.response.data;
+                general.notificacion({
+                    message, 
+                    mode: "danger"
+                 });
+                 u1("puertas_logicas", "trained", false);
+            }).finally(() => {
+                u1("puertas_logicas", "training", false);
+            });
+        },
+        calculate: (x1, x2, af) => {
+            // const data = {x1, x2};
+            const end = `puertas_logicas/calculate/?x1=${x1}&x2=${x2}&af=${af}`;
+            miAxios.get(end)
+            .then(res => {
+                const { respuesta } = res.data;
+                u1("puertas_logicas", "respuesta", respuesta);
+            })
+            .catch(err => {
+                const { message } = err.response.data;
+                general.notificacion({
+                    message, 
+                    mode: "danger"
+                 });
+            });
+        }
+    }
+
     const general = {
         notificacion: props => {
             u1("general", "notification", props);
@@ -73,7 +121,7 @@ const useF = props => {
 
     return { 
         u0, u1, u2, u3, u4, u5, u6, u7, u8, u9, 
-        app, general, 
+        app, puertas_logicas, general, 
     };
 }
 

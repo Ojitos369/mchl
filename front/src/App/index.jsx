@@ -7,6 +7,8 @@ import { Index as IndexPage } from '../Pages/Index';
 import { Test as TestPage } from '../Pages/Test';
 import { Route, Routes, Navigate } from 'react-router-dom';
 
+import { PuertasLogicas as PuertasLogicasPage } from '../Pages/PuertasLogicas';
+
 import { store } from './store';
 import { Provider } from "react-redux";
 import { useStates } from '../Hooks/useStates';
@@ -35,15 +37,11 @@ function AppUI() {
             <BgTheme />
             <Routes>
                 <Route path="" element={ <MainPage /> } >
-                    {/* -----------   Index   ----------- */}
                     <Route path="" element={ <IndexPage /> } />
-                    {/* -----------   /Index   ----------- */}
-                    {/* -----------   Test   ----------- */}
+                    <Route path="puertas_logicas" element={ <PuertasLogicasPage /> } />
                     <Route path="test" element={ <TestPage /> } />
-                    {/* -----------   /Test   ----------- */}
-                    {/* -----------   404   ----------- */}
+
                     <Route path="*" element={<div className='text-danger h1 text-center mt-5'>404 Not Found</div>} />
-                    {/* -----------   /404   ----------- */}
                 </Route>
             </Routes>
 

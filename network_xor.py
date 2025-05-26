@@ -13,6 +13,7 @@ def derivada_sigmoide(a):
     # return a * (1 - a)
      return 1 - a**2
 
+
 # ---------- Clase de la red ----------
 
 class RedNeuronal:
@@ -20,10 +21,10 @@ class RedNeuronal:
         self.tasa = tasa
         self.pesos1 = np.random.randn(ocultas, entradas) * 0.01
         # self.sesgo1 = np.zeros((ocultas, 1))
-        self.sesgo1 = np.random.randn(ocultas, 1) * 0.1
+        self.sesgo1 = np.random.randn(ocultas, 1) * 0.01
         self.pesos2 = np.random.randn(1, ocultas) * 0.01
         # self.sesgo2 = np.zeros((1, 1))
-        self.sesgo2 = np.random.randn(1, 1) * 0.1
+        self.sesgo2 = np.random.randn(1, 1) * 0.01
 
     # Propagación hacia adelante
     def adelantado(self, X: np.ndarray) -> np.ndarray:

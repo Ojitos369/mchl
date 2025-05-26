@@ -1,12 +1,15 @@
 services:
   web:
     build: .
-    command: bash -c "service cron start && python manage.py runserver 0.0.0.0:8000"
-    container_name: rng-py
+    # command: bash -c "service cron start && python manage.py runserver 0.0.0.0:8000"
+    command: ["/usr/bin/supervisord"]
+    container_name: mchl-py
     restart: unless-stopped
     env_file:
       - .env
     volumes:
       - .:/usr/src/app
     ports:
-      - "8000:8000"
+      - "8010:8000"
+
+

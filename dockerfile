@@ -12,7 +12,7 @@ ENV PYTHONUNBUFFERED 1
 # DEPENDENCIES
 RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y \
-    curl git zsh neovim wget unzip cron locales tzdata
+    curl git zsh neovim wget unzip cron locales tzdata curl supervisor htop
 
 # ZSH 
 RUN apt install git neovim curl zsh -y
@@ -34,12 +34,16 @@ RUN echo "" > /etc/cron.d/my_cron \
 # RUN echo "* * * * * /usr/src/app/crons/test.sh >> /usr/src/logs/test.log 2>&1" >> /etc/cron.d/my_cron
 RUN crontab /etc/cron.d/my_cron
 
+# SUPERVISOR
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+CMD ["/usr/bin/supervisord"]
+
 # PYTHON
 WORKDIR $APPHOME
 COPY . $APPHOME
 RUN pip install -r requirements.txt
 
-# docker start rng-py
-# docker rm -f rng-py && docker image rm rng-web && docker network rm rng-net && docker compose up -d
-# docker rm -f rng-py && docker image rm rng-web && docker compose up -d
+# docker start mchl-py
+# docker rm -f mchl-py && docker image rm mchl-web && docker network rm mchl-net && docker compose up -d
+# docker rm -f mchl-py && docker image rm mchl-web && docker compose up -d
 

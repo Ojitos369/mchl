@@ -1,15 +1,4 @@
-                                                                                                    
-                                                                                                    
-                                                                                                    
-                                                                                                    
-                                                                                                    
-                                                                                                    
-                                                                                                    
-                                                                                                    
-                                                                                                    
-                                                                                                    
-                                                                                                    
-                                                                                                    
+                                                                                                  
                  .:.                                                                                
                  ,;;,.                                                                              
                  ,+?+:.                                                                             
@@ -52,7 +41,7 @@
                                  .:;;;;++;::;+*+;,  ,+;;:;++.                                       
                                  :;::;;;:::;++:     .,,::,,.                                        
                                  .:::::;;;;;+;.                                                     
-                                       ......                                                       
+                                       ......                                                     
 
 
 This repo was created to understand how machine learning algorithms work

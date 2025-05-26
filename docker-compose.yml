@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    command: bash -c "service cron start && python manage.py runserver 0.0.0.0:8000"
+    container_name: rng-py
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "8000:8000"

@@ -2,7 +2,7 @@
 # Implementación detallada de una red neuronal desde cero (sin frameworks) para resolver la compuerta XOR
 # Todas las variables y métodos están en español cuando es viable, para facilitar comprensión.
 # Incluye impresiones (prints) exhaustivas en cada etapa para seguir la evolución de los parámetros.
-
+import time
 import numpy as np  # Operaciones numéricas y manejo de arrays multidimensionales
 
 # 1. Función de activación sigmoide y su derivada
@@ -31,38 +31,74 @@ class RedNeuronal:
     """
 
     def __init__(self, entradas: int, ocultas: int, salidas: int = 1, tasa_aprendizaje: float = 0.1):
+        # time.sleep(1)
+        print()
+        print("--------------------------------------------------")
+        print("--------------------   INIT   --------------------")
+        print("--------------------------------------------------")
+        print()
         self.tasa = tasa_aprendizaje  # η (eta) en descenso de gradiente
+        print("self.tasa")
+        print(self.tasa)
 
         # Inicializar pesos con distribución normal pequeña para romper simetría
         self.pesos1 = np.random.randn(ocultas, entradas) * 0.01  # (ocultas × entradas)
+        print("self.pesos1")
+        print(self.pesos1)
         self.sesgo1 = np.zeros((ocultas, 1))                      # (ocultas × 1)
+        print("self.sesgo1")
+        print(self.sesgo1)
 
         self.pesos2 = np.random.randn(salidas, ocultas) * 0.01   # (1 × ocultas)
+        print("self.pesos2")
+        print(self.pesos2)
         self.sesgo2 = np.zeros((salidas, 1))                      # (1 × 1)
+        print("self.sesgo2")
+        print(self.sesgo2)
 
     # ======== PROPAGACIÓN HACIA ADELANTE ========
     def adelantado(self, X: np.ndarray) -> np.ndarray:
         """Computa la salida de la red y muestra valores intermedios."""
         # Capa oculta: suma ponderada + sesgo → sigmoide
+        # time.sleep(1)
+        print()
+        print("--------------------------------------------------")
+        print("-----------------   ADELANTADO   -----------------")
+        print("--------------------------------------------------")
+        print()
         self.suma1 = np.dot(self.pesos1, X) + self.sesgo1
+        print("self.suma1")
+        print(self.suma1)
         self.act1 = sigmoide(self.suma1)
+        print("self.act1")
+        print(self.act1)
 
         # Capa de salida
         self.suma2 = np.dot(self.pesos2, self.act1) + self.sesgo2
+        print("self.suma2")
+        print(self.suma2)
         self.act2 = sigmoide(self.suma2)
+        print("self.act2")
+        print(self.act2)
 
         # Visualizar
-        print("=== Adelante ===")
-        print("suma1 (pre‑activación oculta):\n", self.suma1)
-        print("act1 (activación oculta):\n", self.act1)
-        print("suma2 (pre‑activación salida):\n", self.suma2)
-        print("act2 (salida / predicción):\n", self.act2)
+        # print("=== Adelante ===")
+        # print("suma1 (pre‑activación oculta):\n", self.suma1)
+        # print("act1 (activación oculta):\n", self.act1)
+        # print("suma2 (pre‑activación salida):\n", self.suma2)
+        # print("act2 (salida / predicción):\n", self.act2)
 
         return self.act2
 
     # ======== FUNCIÓN DE PÉRDIDA ========
     def perdida(self, Y_pred: np.ndarray, Y: np.ndarray) -> float:
         """Calcula entropía cruzada binaria y la imprime."""
+        # time.sleep(1)
+        print()
+        print("---------------------------------------------------")
+        print("-------------------   PERDIDA   -------------------")
+        print("---------------------------------------------------")
+        print()
         m = Y.shape[1]
         eps = 1e-8  # evitar log(0)
         perdida = -(1 / m) * np.sum(Y * np.log(Y_pred + eps) + (1 - Y) * np.log(1 - Y_pred + eps))
@@ -72,6 +108,12 @@ class RedNeuronal:
     # ======== PROPAGACIÓN HACIA ATRÁS ========
     def retropropagacion(self, X: np.ndarray, Y: np.ndarray):
         """Calcula gradientes y actualiza pesos/sesgos; imprime cada gradiente."""
+        # time.sleep(1)
+        print()
+        print("--------------------------------------------------")
+        print("--------------   RETROPROPAGACION   --------------")
+        print("--------------------------------------------------")
+        print()
         m = X.shape[1]
 
         # Error en la capa de salida
@@ -99,15 +141,25 @@ class RedNeuronal:
         self.sesgo1 -= self.tasa * dSesgo1
 
     # ======== BUCLE DE ENTRENAMIENTO ========
-    def entrenar(self, X: np.ndarray, Y: np.ndarray, epocas: int = 10000, imprimir_cada: int = 1000):
+    def entrenar(self, X: np.ndarray, Y: np.ndarray, epocas: int = 10000, imprimir_cada: int = 100):
         """Entrena la red y muestra métricas cada `imprimir_cada` épocas."""
+        # time.sleep(1)
+        print()
+        print("--------------------------------------------------")
+        print("------------------   ENTRENAR   ------------------")
+        print("--------------------------------------------------")
+        print()
+        loss = None
         for i in range(1, epocas + 1):
             print(f"\n--- Época {i} ---")
             Y_pred = self.adelantado(X)
             loss = self.perdida(Y_pred, Y)
             self.retropropagacion(X, Y)
-            if i % imprimir_cada == 0:
-                print(f"(Info) Época {i}, pérdida aprox: {loss:.6f}")
+            print(f"(Info) Época {i}, pérdida aprox: {loss:.6f}")
+            # input("Presiona enter para siguiente")
+            # time.sleep(1)
+            # if i % imprimir_cada == 0:
+            #     print(f"(Info) Época {i}, pérdida aprox: {loss:.6f}")
 
 
 # ======== EJECUCIÓN DIRECTA ========
@@ -115,11 +167,21 @@ if __name__ == "__main__":
     # Datos XOR: entradas (2×4) y etiquetas (1×4)
     X = np.array([[0, 0, 1, 1], [0, 1, 0, 1]])
     Y = np.array([[0, 1, 1, 0]])
+    """ 
+        X       Y
+    0   0       0
+    0   1       1
+    1   0       1
+    1   1       0
+    """
 
     red = RedNeuronal(entradas=2, ocultas=2, tasa_aprendizaje=1)
-    red.entrenar(X, Y, epocas=5, imprimir_cada=1)  # Reduce epocas para ver menos salida
+    red.entrenar(X, Y, epocas=500, imprimir_cada=1)  # Reduce epocas para ver menos salida
 
     print("\nPredicciones finales (redondeadas):", np.round(red.adelantado(X), 3))
+    perdida_final = red.perdida(red.adelantado(X), Y)
+    print("Pérdida final:", perdida_final)
+    
 
 # Temas para profundizar y referencias se mantienen al final ↓
 

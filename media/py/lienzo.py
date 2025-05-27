@@ -17,7 +17,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageOps
 
 # ---------------- Cargar pesos ----------------
-PESOS_PATH = Path("mnist_weights.npz")
+PESOS_PATH = Path("./mnist_weights.npz")
 if not PESOS_PATH.exists():
     raise FileNotFoundError("No se encontró mnist_pesos.npz. Entrena primero red_mnist.py")
 

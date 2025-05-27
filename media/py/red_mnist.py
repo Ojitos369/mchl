@@ -111,12 +111,12 @@ class MNISTNetwork:
             print(f"Epoch {epoch:02d} | loss {loss:.4f} | accuracy {acc:.2%}")
 
 if __name__ == "__main__":
-    csv_path = Path("train.csv")
+    csv_path = Path("../csv/numbers.csv")
     if not csv_path.exists():
         raise FileNotFoundError("Missing train.csv — download it from Kaggle and place it here.")
     X, y = load_mnist_csv(str(csv_path))    # X shape (784, m), y shape (m,)
     Y = one_hot(y)                          # Y shape (10, m)
-    nn = MNISTNetwork(learning_rate=0.5)
+    nn = MNISTNetwork(learning_rate=0.1)
     reforce = True
     weights = None
     try:
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     except FileNotFoundError:
         print("No pre-trained weights found. Training from scratch.")
     if (not weights) or reforce:
-        nn.train(X, Y, epochs=100, batch_size=128)
+        nn.train(X, Y, epochs=500, batch_size=128)
         # Save trained parameters
         np.savez("mnist_weights.npz", W1=nn.W1, b1=nn.b1, W2=nn.W2, b2=nn.b2)
         print("\nTraining complete. Weights saved to mnist_weights.npz")
